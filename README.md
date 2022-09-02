@@ -4,9 +4,10 @@
 cpoy大神 [https://github.com/ScriptKid-Beta/Unexpected_information](https://github.com/ScriptKid-Beta/Unexpected_information)
 
 #### 修改
-1. 增加了特殊格式自动过滤
-2. 优化了性能
-3. jdk11
+- 2022-09-02: 修复bug，减少正则匹配次数。 
+- 增加了特殊格式自动过滤 
+- 优化了性能 
+- jdk11 
 
 #### 介绍
 
