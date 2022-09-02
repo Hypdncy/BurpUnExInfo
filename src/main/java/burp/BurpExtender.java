@@ -117,6 +117,7 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IMessageEdito
 
     static class UnExInfoEditorTab implements IMessageEditorTab {
         private final ITextEditor infoTextEditor;
+        private final Set<String> inMimeType = Set.of("text", "html", "json", "script", "xml");
         private boolean isShow = false;
         private String infoText = "";
 
@@ -140,12 +141,17 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IMessageEdito
 
         @Override
         public boolean isEnabled(byte[] content, boolean isRequest) {
+            // byte only req or res
             if (isRequest) {
                 return false;
             } else {
                 //取头部信息以及body信息 给js判断使用
                 IResponseInfo response = helpers.analyzeResponse(content);
-                List<String> headers = response.getHeaders();
+                String inferredMimeType = response.getInferredMimeType().toLowerCase();
+                if (inferredMimeType.isEmpty() || !inMimeType.contains(inferredMimeType)) {
+                    return false;
+                }
+
                 byte[] response_body = Arrays.copyOfRange(content, response.getBodyOffset(), content.length);
 
                 // 引用规则匹配
@@ -183,20 +189,19 @@ public class BurpExtender implements IBurpExtender, IHttpListener, IMessageEdito
                     isShow = true;
 
                 }
-                if (UnExInfo.js(headers.toString(), content)) {
+                if (inferredMimeType.equals("script")) {
                     String path = UnExInfo.Path(new String(response_body));
                     if (path.length() != 0) {
                         text += "Interface information: " + '\n' + path + '\n';
                         isShow = true;
                     }
-                }
-                if (UnExInfo.js(headers.toString(), content)) {
-                    String url = UnExInfo.Url(new String(response_body));
-                    if (url.length() != 0) {
-                        text += "URL information: " + '\n' + url + '\n';
+                    String stringUrl = UnExInfo.Url(new String(response_body));
+                    if (stringUrl.length() != 0) {
+                        text += "URL information: " + '\n' + stringUrl + '\n';
                         isShow = true;
                     }
                 }
+
                 infoText = text;
                 return isShow;
             }
